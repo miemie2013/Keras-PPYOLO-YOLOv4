@@ -1,0 +1,30 @@
+# Virtualenv
+/.venv/
+/venv/
+
+.idea/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.ipynb_checkpoints/
+
+/images/res/*.jpg
+/eval_results/
+/results/
+/weights/
+/video_out/
+/annotation_json/
+/model/__pycache__/
+
+
+
+*.pdparams
+*.npz
+*.zip
+*.log
+*.pt
+*.h5
+
+
+
+*.py___jb_tmp___

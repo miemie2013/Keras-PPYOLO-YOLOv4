@@ -16,6 +16,7 @@ import os
 import argparse
 
 from config import *
+from model.EMA import ExponentialMovingAverage
 
 from model.yolo import YOLO
 from tools.cocotools import get_classes, catid2clsid, clsid2catid
@@ -169,7 +170,7 @@ if __name__ == '__main__':
     yolo_loss = Loss(iou_loss=iou_loss, iou_aware_loss=iou_aware_loss, **cfg.yolo_loss)
     Head = select_head(cfg.head_type)
     head = Head(yolo_loss=yolo_loss, is_train=True, nms_cfg=cfg.nms_cfg, **cfg.head)   # 评测时还是会使用了DropBlock，所以用eval.py评测模型时与训练时评测得到的mAP有一点不同。
-    yolo = YOLO(backbone, head, cfg.ema_decay)
+    yolo = YOLO(backbone, head)
 
     # predict_model
     x = keras.layers.Input(shape=(None, None, 3), name='x', dtype='float32')
@@ -205,8 +206,10 @@ if __name__ == '__main__':
         # 冻结，使得需要的显存减少。低显存的卡建议这样配置。
         backbone.freeze()
 
+    ema = None
     if cfg.use_ema:
-        yolo.init_ema_state_dict()   # ema_state_dict使用cpu内存，不占用显存
+        ema = ExponentialMovingAverage(predict_model, cfg.ema_decay)
+        ema.register()
 
     # 种类id
     _catid2clsid = copy.deepcopy(catid2clsid)
@@ -346,7 +349,7 @@ if __name__ == '__main__':
                 _loss_iou_aware = losses[6]
 
             if cfg.use_ema:
-                yolo.update_ema_state_dict(iter_id - 1)   # 更新ema_state_dict
+                ema.update()   # 更新ema字典
 
             # ==================== log ====================
             if iter_id % 20 == 0:
@@ -368,11 +371,11 @@ if __name__ == '__main__':
             # ==================== save ====================
             if iter_id % cfg.train_cfg['save_iter'] == 0:
                 if cfg.use_ema:
-                    yolo.apply_ema_state_dict()
+                    ema.apply()
                 save_path = './weights/step%.8d.h5' % iter_id
                 predict_model.save_weights(save_path)
                 if cfg.use_ema:
-                    yolo.restore_current_state_dict()
+                    ema.restore()
                 path_dir = os.listdir('./weights')
                 steps = []
                 names = []
@@ -389,7 +392,7 @@ if __name__ == '__main__':
             # ==================== eval ====================
             if iter_id % cfg.train_cfg['eval_iter'] == 0:
                 if cfg.use_ema:
-                    yolo.apply_ema_state_dict()
+                    ema.apply()
                 head.set_dropblock(is_test=True)   # 没卵用，因为是静态图。为了和Pytorch版保持风格一致，故保留。
                 box_ap = eval(_decode, val_images, cfg.val_pre_path, cfg.val_path, cfg.eval_cfg['eval_batch_size'], _clsid2catid, cfg.eval_cfg['draw_image'], cfg.eval_cfg['draw_thresh'])
                 logger.info("box ap: %.3f" % (box_ap[0], ))
@@ -402,7 +405,7 @@ if __name__ == '__main__':
                     best_ap_list[1] = iter_id
                     predict_model.save_weights('./weights/best_model.h5')
                 if cfg.use_ema:
-                    yolo.restore_current_state_dict()
+                    ema.restore()
                 logger.info("Best test ap: {}, in iter: {}".format(best_ap_list[0], best_ap_list[1]))
 
             # ==================== exit ====================

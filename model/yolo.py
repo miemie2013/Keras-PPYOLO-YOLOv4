@@ -7,20 +7,13 @@
 #   Description : keras_ppyolo
 #
 # ================================================================
-import tensorflow as tf
-import copy
-from collections import OrderedDict
-
 
 
 class YOLO(object):
-    def __init__(self, backbone, head, ema_decay=0.9998):
+    def __init__(self, backbone, head):
         super(YOLO, self).__init__()
         self.backbone = backbone
         self.head = head
-        self.ema_decay = ema_decay
-        self.ema_state_dict = OrderedDict()
-        self.current_state_dict = OrderedDict()
 
     def get_outputs(self, x):
         body_feats = self.backbone(x)
@@ -43,18 +36,6 @@ class YOLO(object):
         targets = [target0, target1, target2]
         loss = self.head.get_loss(outputs, gt_box, None, None, targets)
         return loss
-
-    def init_ema_state_dict(self):
-        pass
-
-    def update_ema_state_dict(self, thres_steps):
-        pass
-
-    def apply_ema_state_dict(self):
-        pass
-
-    def restore_current_state_dict(self):
-        pass
 
 
 

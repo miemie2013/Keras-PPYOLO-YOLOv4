@@ -35,8 +35,8 @@ class PPYOLO_r18vd_Config(object):
             batch_size=8,
             num_threads=5,   # 读数据的线程数
             max_batch=3,     # 最大读多少个批
-            model_path='ppyolo_2x.h5',
-            # model_path='./weights/step00010000.h5',
+            model_path='ppyolo_r18vd.h5',
+            # model_path='./weights/step00005000.h5',
             save_iter=1000,   # 每隔几步保存一次模型
             eval_iter=5000,   # 每隔几步计算一次eval集的mAP
             max_iters=500000,   # 训练多少步
@@ -45,9 +45,9 @@ class PPYOLO_r18vd_Config(object):
 
         # 验证。用于train.py、eval.py、test_dev.py
         self.eval_cfg = dict(
-            model_path='ppyolo_2x.h5',
+            model_path='ppyolo_r18vd.h5',
             # model_path='./weights/step00005000.h5',
-            target_size=608,
+            target_size=416,
             draw_image=False,    # 是否画出验证集图片
             draw_thresh=0.15,    # 如果draw_image==True，那么只画出分数超过draw_thresh的物体的预测框。
             eval_batch_size=4,   # 验证时的批大小。
@@ -55,9 +55,9 @@ class PPYOLO_r18vd_Config(object):
 
         # 测试。用于demo.py
         self.test_cfg = dict(
-            model_path='ppyolo_2x.h5',
+            model_path='ppyolo_r18vd.h5',
             # model_path='./weights/step00010000.h5',
-            target_size=608,
+            target_size=416,
             # target_size=320,
             draw_image=True,
             draw_thresh=0.15,   # 如果draw_image==True，那么只画出分数超过draw_thresh的物体的预测框。
@@ -68,31 +68,30 @@ class PPYOLO_r18vd_Config(object):
         self.use_ema = True
         # self.use_ema = False
         self.ema_decay = 0.9998
-        self.backbone_type = 'Resnet50Vd'
+        self.backbone_type = 'Resnet18Vd'
         self.backbone = dict(
             norm_type='bn',
-            feature_maps=[3, 4, 5],
-            dcn_v2_stages=[5],
-            downsample_in3x3=True,   # 注意这个细节，是在3x3卷积层下采样的。
+            feature_maps=[4, 5],
+            dcn_v2_stages=[],
             freeze_at=5,
         )
         self.head_type = 'YOLOv3Head'
         self.head = dict(
             num_classes=self.num_classes,
+            conv_block_num=0,
             norm_type='bn',
-            anchor_masks=[[6, 7, 8], [3, 4, 5], [0, 1, 2]],
-            anchors=[[10, 13], [16, 30], [33, 23],
-                     [30, 61], [62, 45], [59, 119],
-                     [116, 90], [156, 198], [373, 326]],
-            coord_conv=True,
-            iou_aware=True,
+            anchor_masks=[[3, 4, 5], [0, 1, 2]],
+            anchors=[[10, 14], [23, 27], [37, 58],
+                     [81, 82], [135, 169], [344, 319]],
+            coord_conv=False,
+            iou_aware=False,
             iou_aware_factor=0.4,
             scale_x_y=1.05,
-            spp=True,
+            spp=False,
             drop_block=True,
             keep_prob=0.9,
-            downsample=[32, 16, 8],
-            in_channels=[2048, 1024, 512],
+            downsample=[32, 16],
+            in_channels=[512, 256],
         )
         self.iou_loss_type = 'IouLoss'
         self.iou_loss = dict(
@@ -123,13 +122,6 @@ class PPYOLO_r18vd_Config(object):
             use_gaussian=False,
             gaussian_sigma=2.,
         )
-        # self.nms_cfg = dict(
-        #     nms_type='fast_nms',
-        #     score_threshold=0.01,
-        #     nms_threshold=0.45,
-        #     nms_top_k=500,
-        #     keep_top_k=100,
-        # )
 
 
         # ============= 预处理相关 =============
@@ -183,11 +175,10 @@ class PPYOLO_r18vd_Config(object):
         )
         # Gt2YoloTarget
         self.gt2YoloTarget = dict(
-            anchor_masks=[[6, 7, 8], [3, 4, 5], [0, 1, 2]],
-            anchors=[[10, 13], [16, 30], [33, 23],
-                     [30, 61], [62, 45], [59, 119],
-                     [116, 90], [156, 198], [373, 326]],
-            downsample_ratios=[32, 16, 8],
+            anchor_masks=[[3, 4, 5], [0, 1, 2]],
+            anchors=[[10, 14], [23, 27], [37, 58],
+                     [81, 82], [135, 169], [344, 319]],
+            downsample_ratios=[32, 16],
             num_classes=self.num_classes,
         )
         # ResizeImage

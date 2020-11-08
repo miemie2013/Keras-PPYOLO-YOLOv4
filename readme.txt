@@ -38,6 +38,9 @@ python train.py --config=0
 (如果使用ppyolo_2x.py配置文件)
 python train.py --config=1
 
+(如果使用ppyolo_r18vd.py配置文件)
+python train.py --config=2
+
 
 
 =============== 预测 ===============
@@ -47,6 +50,9 @@ python demo.py --config=0
 (如果使用ppyolo_2x.py配置文件)
 python demo.py --config=1
 
+(如果使用ppyolo_r18vd.py配置文件)
+python demo.py --config=2
+
 
 =============== 预测视频 ===============
 (如果使用yolov4_2x.py配置文件)
@@ -54,6 +60,9 @@ python demo_video.py --config=0
 
 (如果使用ppyolo_2x.py配置文件)
 python demo_video.py --config=1
+
+(如果使用ppyolo_r18vd.py配置文件)
+python demo_video.py --config=2
 
 
 =============== 验证 ===============
@@ -63,6 +72,9 @@ python eval.py --config=0
 (如果使用ppyolo_2x.py配置文件)
 python eval.py --config=1
 
+(如果使用ppyolo_r18vd.py配置文件)
+python eval.py --config=2
+
 
 
 =============== 跑test_dev ===============
@@ -71,6 +83,9 @@ python test_dev.py --config=0
 
 (如果使用ppyolo_2x.py配置文件)
 python test_dev.py --config=1
+
+(如果使用ppyolo_r18vd.py配置文件)
+python test_dev.py --config=2
 
 
 

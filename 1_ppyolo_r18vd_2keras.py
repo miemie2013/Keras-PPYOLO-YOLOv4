@@ -14,7 +14,7 @@ import paddle.fluid as fluid
 
 
 
-cfg = PPYOLO_2x_Config()
+cfg = PPYOLO_r18vd_Config()
 model_path = 'ppyolo_r18vd.pdparams'
 
 

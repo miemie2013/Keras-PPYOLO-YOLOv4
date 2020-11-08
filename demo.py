@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
     # warm up
     if use_gpu:
-        for k in range(10):
+        for k in range(20):
             image, boxes, scores, classes = _decode.detect_image(image, pimage, im_size, draw_image=False)
 
 

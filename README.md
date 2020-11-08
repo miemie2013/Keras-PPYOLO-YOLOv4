@@ -16,13 +16,19 @@ PP-YOLO是[PaddleDetection](https://github.com/PaddlePaddle/PaddleDetection)优�
 |:------------:|:--------:|:----:|:-------:|:-------:|:---------:|
 | YOLOv4    | CSPDarkNet53 | (608,608)  | 0.491  | 0.420  | 10.3 |
 | PPYOLO    | ResNet50-vd | (608,608)  | 0.448  | 0.451  | 11.9 |
+| PPYOLO_r18vd    | ResNet18-vd | (608,608)  | 0.286  | -  | 33.7 |
+| PPYOLO_r18vd    | ResNet18-vd | (416,416)  | 0.286  | -  | 50.8 |
+| PPYOLO_r18vd    | ResNet18-vd | (320,320)  | 0.262  | -  | 65.0 |
 
 **注意:**
 
-- 测速环境为： win10, i5-9400F, 8GB RAM, GTX1660Ti(6GB), cuda9, tensorflow-gpu==1.12.2。
+- 测速环境为： win10, i5-9400F, 8GB RAM, GTX1660Ti(6GB), cuda9, tensorflow-gpu==1.12.2。若使用Linux系统FPS还能再提高。
 - FPS由demo.py测得。预测50张图片，预测之前会有一个热身(warm up)阶段使速度稳定。
 - 由于原版YOLOv4使用coco trainval2014进行训练，训练样本中包含部分评估样本，若使用val2017集会导致精度虚高。所以表中的0.491的精度并不可信。
 - PPYOLO使用了matrix_nms进行后处理，本仓库的YOLOv4亦使用了matrix_nms进行后处理。matrix_nms拥有和fast_nms一样的速度，mAP却比后者高。
+- PPYOLO_r18vd(416,416) mAP(IoU=0.50)(COCO val2017)为0.470，表中的0.286指的是mAP(IoU=0.50:0.95)(COCO val2017)。
+- PPYOLO_r18vd(608,608) mAP(IoU=0.50)(COCO val2017)为0.478。不建议使用608x608输入大小。
+- PPYOLO_r18vd(320,320) mAP(IoU=0.50)(COCO val2017)为0.437。
 
 
 yolov4_2x.h5在val2017下的mAP:

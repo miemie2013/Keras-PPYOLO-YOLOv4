@@ -51,7 +51,7 @@ set_session(tf.Session(config=config))
 
 
 def multi_thread_op(i, num_threads, batch_size, samples, context, with_mixup, sample_transforms, batch_transforms,
-                    shape, images, gt_bbox, gt_score, gt_class, target0, target1, target2):
+                    shape, images, gt_bbox, gt_score, gt_class, target0, target1, target2, target_num):
     for k in range(i, batch_size, num_threads):
         for sample_transform in sample_transforms:
             if isinstance(sample_transform, MixupImage):
@@ -73,7 +73,8 @@ def multi_thread_op(i, num_threads, batch_size, samples, context, with_mixup, sa
         gt_class[k] = np.expand_dims(samples[k]['gt_class'].astype(np.int32), 0)
         target0[k] = np.expand_dims(samples[k]['target0'].astype(np.float32), 0)
         target1[k] = np.expand_dims(samples[k]['target1'].astype(np.float32), 0)
-        target2[k] = np.expand_dims(samples[k]['target2'].astype(np.float32), 0)
+        if target_num > 2:
+            target2[k] = np.expand_dims(samples[k]['target2'].astype(np.float32), 0)
 
 
 def read_train_data(cfg,
@@ -84,7 +85,7 @@ def read_train_data(cfg,
                     _iter_id,
                     train_dic,
                     use_gpu,
-                    context, with_mixup, sample_transforms, batch_transforms):
+                    context, with_mixup, sample_transforms, batch_transforms, target_num):
     iter_id = _iter_id
     num_threads = cfg.train_cfg['num_threads']
     while True:   # 无限个epoch
@@ -116,7 +117,7 @@ def read_train_data(cfg,
             threads = []
             for i in range(num_threads):
                 t = threading.Thread(target=multi_thread_op, args=(i, num_threads, batch_size, samples, context, with_mixup, sample_transforms, batch_transforms,
-                                                                   shape, images, gt_bbox, gt_score, gt_class, target0, target1, target2))
+                                                                   shape, images, gt_bbox, gt_score, gt_class, target0, target1, target2, target_num))
                 threads.append(t)
                 t.start()
             # 等待所有线程任务结束。
@@ -127,14 +128,16 @@ def read_train_data(cfg,
             gt_bbox = np.concatenate(gt_bbox, 0)
             target0 = np.concatenate(target0, 0)
             target1 = np.concatenate(target1, 0)
-            target2 = np.concatenate(target2, 0)
+            if target_num > 2:
+                target2 = np.concatenate(target2, 0)
 
             dic = {}
             dic['images'] = images.transpose(0, 2, 3, 1)
             dic['gt_bbox'] = gt_bbox
             dic['target0'] = target0
             dic['target1'] = target1
-            dic['target2'] = target2
+            if target_num > 2:
+                dic['target2'] = target2
             train_dic['%.8d'%iter_id] = dic
 
             # ==================== exit ====================
@@ -290,6 +293,7 @@ if __name__ == '__main__':
     train_steps = num_train // batch_size
 
     # 读数据的线程
+    target_num = len(cfg.head['anchor_masks'])
     train_dic ={}
     thr = threading.Thread(target=read_train_data,
                            args=(cfg,
@@ -300,7 +304,7 @@ if __name__ == '__main__':
                                  iter_id,
                                  train_dic,
                                  use_gpu,
-                                 context, with_mixup, sample_transforms, batch_transforms))
+                                 context, with_mixup, sample_transforms, batch_transforms, target_num))
     thr.start()
 
 
@@ -332,8 +336,11 @@ if __name__ == '__main__':
             gt_bbox = dic['gt_bbox']
             target0 = dic['target0']
             target1 = dic['target1']
-            target2 = dic['target2']
-            targets = [target0, target1, target2]
+            if target_num > 2:
+                target2 = dic['target2']
+                targets = [target0, target1, target2]
+            else:
+                targets = [target0, target1]
             batch_xs = [images, gt_bbox, *targets]
             y_true = [np.zeros(batch_size) for _ in range(loss_n)]
             losses = train_model.train_on_batch(batch_xs, y_true)

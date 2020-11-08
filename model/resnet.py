@@ -234,7 +234,7 @@ class BasicBlock(object):
             shortcut = self.conv3(input_tensor)
         else:
             shortcut = input_tensor
-        x = x + shortcut
+        x = keras.layers.add([x, shortcut])
         x = self.act(x)
         return x
 

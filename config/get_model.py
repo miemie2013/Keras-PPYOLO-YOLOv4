@@ -18,6 +18,8 @@ from model.yolov4_head import *
 def select_backbone(name):
     if name == 'Resnet50Vd':
         return Resnet50Vd
+    if name == 'Resnet18Vd':
+        return Resnet18Vd
     if name == 'CSPDarknet53':
         return CSPDarknet53
 

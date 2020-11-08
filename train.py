@@ -163,6 +163,7 @@ if __name__ == '__main__':
     iter_id = 0
 
     # 创建模型
+    target_num = len(cfg.head['anchor_masks'])
     Backbone = select_backbone(cfg.backbone_type)
     backbone = Backbone(**cfg.backbone)
     IouLoss = select_loss(cfg.iou_loss_type)
@@ -191,9 +192,13 @@ if __name__ == '__main__':
     gt_bbox_tensor = keras.layers.Input(shape=(None, 4), name='gt_bbox', dtype='float32')
     target0_tensor = keras.layers.Input(shape=(anchor_num_per_layer, num_filters, None, None), name='target0', dtype='float32')
     target1_tensor = keras.layers.Input(shape=(anchor_num_per_layer, num_filters, None, None), name='target1', dtype='float32')
-    target2_tensor = keras.layers.Input(shape=(anchor_num_per_layer, num_filters, None, None), name='target2', dtype='float32')
-    targets = [target0_tensor, target1_tensor, target2_tensor]
-    loss_list = keras.layers.Lambda(yolo.get_loss, name='yolo_loss')([*outputs, gt_bbox_tensor, *targets])
+    if target_num > 2:
+        target2_tensor = keras.layers.Input(shape=(anchor_num_per_layer, num_filters, None, None), name='target2', dtype='float32')
+        targets = [target0_tensor, target1_tensor, target2_tensor]
+    else:
+        targets = [target0_tensor, target1_tensor]
+    loss_list = keras.layers.Lambda(yolo.get_loss, name='yolo_loss',
+                                    arguments={'target_num': target_num, })([*outputs, gt_bbox_tensor, *targets])
     train_model = keras.models.Model(inputs=[x, gt_bbox_tensor, *targets], outputs=loss_list)
     loss_n = len(loss_list)
 
@@ -293,7 +298,6 @@ if __name__ == '__main__':
     train_steps = num_train // batch_size
 
     # 读数据的线程
-    target_num = len(cfg.head['anchor_masks'])
     train_dic ={}
     thr = threading.Thread(target=read_train_data,
                            args=(cfg,

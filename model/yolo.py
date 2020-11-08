@@ -24,16 +24,25 @@ class YOLO(object):
         preds = self.head.get_prediction(outputs, im_size)
         return preds
 
-    def get_loss(self, args):
-        output0 = args[0]
-        output1 = args[1]
-        output2 = args[2]
-        gt_box = args[3]
-        target0 = args[4]
-        target1 = args[5]
-        target2 = args[6]
-        outputs = [output0, output1, output2]
-        targets = [target0, target1, target2]
+    def get_loss(self, args, target_num):
+        if target_num == 3:
+            output0 = args[0]
+            output1 = args[1]
+            output2 = args[2]
+            gt_box = args[3]
+            target0 = args[4]
+            target1 = args[5]
+            target2 = args[6]
+            outputs = [output0, output1, output2]
+            targets = [target0, target1, target2]
+        elif target_num == 2:
+            output0 = args[0]
+            output1 = args[1]
+            gt_box = args[2]
+            target0 = args[3]
+            target1 = args[4]
+            outputs = [output0, output1]
+            targets = [target0, target1]
         loss = self.head.get_loss(outputs, gt_box, None, None, targets)
         return loss
 

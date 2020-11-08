@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 parser = argparse.ArgumentParser(description='YOLO Infer Script')
 parser.add_argument('--use_gpu', type=bool, default=True)
 parser.add_argument('--config', type=int, default=1,
-                    choices=[0, 1],
-                    help='0 -- yolov4_2x.py;  1 -- ppyolo_2x.py;  ')
+                    choices=[0, 1, 2],
+                    help='0 -- yolov4_2x.py;  1 -- ppyolo_2x.py;  2 -- ppyolo_r18vd.py;  ')
 args = parser.parse_args()
 config_file = args.config
 use_gpu = args.use_gpu
@@ -63,6 +63,8 @@ if __name__ == '__main__':
         cfg = YOLOv4_2x_Config()
     elif config_file == 1:
         cfg = PPYOLO_2x_Config()
+    elif config_file == 2:
+        cfg = PPYOLO_r18vd_Config()
 
 
     # 读取的模型

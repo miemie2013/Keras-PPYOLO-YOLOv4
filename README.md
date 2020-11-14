@@ -205,6 +205,11 @@ python demo.py --config=0
 python demo.py --config=1
 ```
 
+(如果使用ppyolo_r18vd.py配置文件)
+```
+python demo.py --config=2
+```
+
 
 ## 训练
 
